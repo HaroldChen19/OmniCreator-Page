@@ -1,0 +1,1160 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>OmniCreator</title>
+<link href="./config_files/style.css" rel="stylesheet">
+
+
+<style>
+  p.serif{
+    font-family:"Times New Roman", Times, serif;
+  }
+  p.sansserif{
+    font-family: Arial, Helvetica, sans-serif;
+  }
+</style>
+  
+</head>
+
+<body>
+<div class="content">
+  <img src="assets/figs/logo.jpg" alt="OmniCreator Logo" style="display: block; margin: 0 auto; max-width: 15%; height: auto;">
+  <h1>
+    <strong>
+      <span class="gradient-text"><i>OmniCreator</i></span>
+    </strong>
+    <br>
+    <strong>
+      <span class="gradient-black">Self-Supervised Unified Generation with Universal Editing</span>
+    </strong>
+  </h1>
+  <p id="authors" class="serif">
+    <span style="font-size: 0.8em">
+      <a href="https://haroldchen19.github.io/">Haodong Chen<sup>1,2,5</sup></a>
+      <a href="http://hal.cse.msu.edu/team/lan-wang/">Lan Wang<sup>3</sup></a>
+      <a href="https://leehomyc.github.io/">Harry Yang<sup>1,2</sup></a>
+      <a href="https://sites.google.com/site/sernam">Ser-Nam Lim<sup>1,4</sup></a>
+    </span>
+    <br>
+    <span style="font-size: 0.8em; margin-top: 0.5em">
+      <a><sup>1</sup>Everlyn AI</a>
+      <a><sup>2</sup>The Hong Kong University of Science and Technology</a>
+      <a><sup>3</sup>Michigan State University</a>
+      <br>
+      <a><sup>4</sup>University of Central Florida</a>
+      <a><sup>5</sup>Northwestern Polytechnical University</a>
+    </span>
+  </p>
+
+  <font size="+1">
+    <p style="text-align: center;" class="sansserif">
+      <a href="https://arxiv.org/pdf/2407.02157" target="" style="font-weight: bold;">[arXiv (coming soon)]</a>&nbsp;&nbsp;&nbsp;&nbsp;
+      <a href="https://github.com/HaroldChen19/OmniCreator-Page" target="" style="font-weight: bold;">[Code (coming soon)]</a>&nbsp;&nbsp;&nbsp;&nbsp;
+      <a href="https://huggingface.co/datasets/Harold328/OmniBench-99" target="" style="font-weight: bold;">[OmniBench-99]</a>&nbsp;&nbsp;&nbsp;&nbsp;
+    </p><br>
+  </font>
+
+  <div style="text-align:center;">
+    <img src="assets/figs/teaser.jpg" width="75%">
+  </div>
+</div>
+
+
+<div class="content">
+  <p style="text-align:center; font-size: 2em; font-weight: bold" class="sansserif">Abstract</p>
+  <p style="font-size: 1.2em; margin-left:5em; margin-right:5em;" class="serif">
+    We introduce OmniCreator, a novel framework that can conduct text-prompted unified (image+video) generation as well as editing all in one place.
+    OmniCreator acquires generative and universal editing capabilities in a self-supervised manner, taking original text-video pairs as conditions while utilizing the same video as a denoising target to learn the semantic correspondence between video and text.
+    During inference, when presented with a text prompt and a video, OmniCreator is capable of generating a target that is faithful to both, achieving a universal editing effect that is unconstrained as opposed to existing editing work that primarily focuses on certain editing types or relies on additional controls (<i>e.g.</i>, structural conditions, attention features, or DDIM inversion).
+    On the other hand, when presented with a text prompt only, OmniCreator becomes generative, producing high-quality video as a result of the semantic correspondence learned.
+    Importantly, we found that the same capabilities extend to images as is, making OmniCreator a truly unified framework.
+    Further, due to the lack of existing generative video editing benchmarks, we introduce the OmniBench-99 dataset, designed to evaluate the performance of generative video editing models comprehensively.
+    Extensive experiments demonstrate that OmniCreator exhibits substantial superiority over all other models.
+  </p>
+</div>
+
+
+<div class="content">
+  <p style="text-align:center; font-size: 2em; font-weight: bold" class="sansserif">Overview Video</p>
+  <div style="text-align:center; margin-bottom:1em;">
+    <video class="clickplay" width="90%" controls>
+      <source src="assets/video/Page_demo_720p.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+</div>
+
+
+<div class="content">
+  <p style="text-align:center; font-size: 2em; font-weight: bold" class="sansserif">Applications</p>
+  <!-- <p style="text-align:center; font-size: 1.2em; color: orangered" class="serif"><i><b>Click to Play the Videos</b></i></p> -->
+
+  <p style="font-size: 1.25em" class="serif"><b style="font-size: 1.3em;">Text-guided Video Editing</b> = Reference Video + Editing Prompt</p>
+  <p style="text-align:center; font-size: 1.2em; color: orangered" class="serif"><i><b>Editing Types</b></i></p>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/type/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Foreground:</b> "A volcano"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/type/fore.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/type/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Background:</b> "Dark sky"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/type/back.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/type/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Composite:</b> "Dark sky, Game style mountain"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/type/compo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/type/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Overall/Style:</b> "Oil painting style"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/type/style.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+    </div>
+  </div>
+  <p style="text-align:center; font-size: 1.2em; color: orangered" class="serif"><i><b>Editing Scenarios</b></i></p>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/env/wea/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Weather:</b> "It's snowing"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/env/wea/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/env/time/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Time:</b> "At sunset"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/env/time/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/env/back/slowed_back.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Background:</b> "Red background"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/env/back/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/object/add/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Addition:</b> "Fishing boats"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/object/add/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/object/rep/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Replacement:</b> "Roses"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/object/rep/edit 2.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/object/rem/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Removal:</b> "With no ship"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/object/rem/edit_1.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/human/app/slowed_slowed_ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Appearance:</b> "Tony Stark"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/human/app/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/human/pose/ori.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Motion/Pose:</b> "Standing"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_edit/human/pose/seagull.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Video</p>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size: 1.25em" class="serif"><b style="font-size: 1.3em;">Text-to-Video Generation</b> = Target Prompt</p>
+  <p style="text-align:center; font-size: 1.2em; color: orangered" class="serif"><i><b>16 Frames</b></i></p>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/bollon_64_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A balloon floating away into the sky on a windy day."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/car_32_25.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A robot assembling a car in a futuristic factory."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/firework_32_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A city skyline with fireworks exploding in the sky."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/fly_32_75.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"An eagle flying over the mountains at dawn."</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/hiking_32_25.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A man hiking through a dense forest during autumn."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/output_video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A time-lapse of a flower blooming in a garden."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/panda_64_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A panda eating bamboo in a serene forest."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/storm_32_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A thunderstorm rolling in over the ocean with lightning strikes."</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/sunset_32_20.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A sunset casting long shadows over rolling hills."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/underwater_32_125.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A diver exploring a coral reef underwater."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/fire.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A serious forest fire."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/wave_32_125.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A calm coastline with choppy waves."</p>
+      </div>
+    </div>
+    <p style="text-align:center; font-size: 1.2em; color: orangered" class="serif"><i><b>32 Frames</b></i></p>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/32/_A thunderstorm with lightning striking across the sky._.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A thunderstorm with lightning striking across the sky."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/32/“_A serene forest with a waterfall flowing into a pond-Copy1._”.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A serene forest with a waterfall flowing into a pond."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/32/“A farmer plowing a field with an old tractor.”.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A farmer plowing a field with an old tractor."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/32/“A spooky river in the middle of a dense jungle”.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A spooky river in the middle of a dense jungle."</p>
+      </div>
+    </div>
+    <p style="text-align:center; font-size: 1.2em; color: orangered" class="serif"><i><b>64 Frames</b></i></p>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/64/_A cat resting on a sunny windowsill_.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A cat resting on a sunny windowsill."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/64/“A shipwreck under water.”.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A shipwreck under water."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/64/“A sunset over a calm ocean”.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A sunset over a calm ocean."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/video_gen/64/“Fireworks exploding in the air.”.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"Fireworks exploding in the air."</p>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size: 1.25em" class="serif"><b style="font-size: 1.3em;">Text-guided Image Editing</b> = Reference Image + Editing Prompt</p>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/obj_add/ori.jpeg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Addition:</b> "A canoe"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/obj_add/edit.jpg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Image</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/obj_rep/ori.jpeg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Replacement:</b> "A red parrot"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/obj_rep/edit.jpg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Image</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/obj_rem/ori.jpeg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Removal:</b> "With no cup"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/obj_rem/edit 2.jpg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Image</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/bg_change/ori.jpeg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Background:</b> "A desert"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/bg_change/edit.jpg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Image</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/style_change/ori.jpeg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Style:</b> "Van Gogh style"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/style_change/edit_new.jpg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Image</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/texture_change/ori.jpeg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Texture:</b> "Crystal texture"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/texture_change/edit.jpg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Image</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/action_change/ori.jpeg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><b>Action:</b> "Flying"</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_edit/action_change/edit.jpg" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Edited Image</p>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size: 1.25em" class="serif"><b style="font-size: 1.3em;">Text-to-Image Generation</b> = Target Prompt</p>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/1.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A serene mountain landscape at dawn, with soft mist covering the peaks and golden sunlight casting long shadows."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/2.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"An underwater scene with a vibrant coral reef, colorful fish swimming around, and sunlight filtering from above."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/3.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A small, cozy cabin in the middle of a snowy forest, warm light glowing from its windows under a star-filled sky."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/4.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A sleek, modern kitchen with stainless steel appliances, white marble countertops in natural light."</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/5.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A fantasy castle floating above the clouds, surrounded by ethereal light and mysterious mist."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/6.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A beach at sunset, with soft waves lapping against the shore and a palm tree casting a shadow over the sand."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/7.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A young woman with curly hair and a warm smile, standing in a sunflower field under a bright blue sky."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/8.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A vibrant underwater world where buildings bioluminesce and a variety of sea creatures swim through the streets."</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/9.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A dramatic canyon landscape with towering rock formations, a winding river below, and a clear blue sky."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/10.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A detailed close-up of an owl perched on a branch in a snowy forest, its feathers fluffed and eyes intense."</p>
+      </div>
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/11.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"A mystical cave with glowing crystals and an underground lake."</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/image_gen/12.png" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">"Desert scene with towering sand dunes and traces of traffic on the sand."</p>
+      </div>
+    </div>
+
+  </div>
+
+
+  <p class="serif"><b style="font-size: 1.3em;">&hellip;</b></p>
+
+</div>
+
+
+<div class="content">
+  <p style="text-align:center; font-size: 2em; font-weight: bold" class="sansserif">Comparisons</p>
+  <!-- <p style="text-align:center; font-size: 1.2em; color: orangered" class="serif"><i><b>Click to Play the Videos</b></i></p> -->
+
+  <!-- <p style="font-size: 1.25em" class="serif"><b style="font-size: 1.3em;">Text-guided Video Editing</b> = Reference Video + Editing Prompt</p> -->
+  <p style="text-align:center; font-size: 1.2em; color: orangered" class="serif"><i><b>Editing Types</b></i></p>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/video_edit/type/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Foreground:</b> <i>"A volcano"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/fore/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/fore/ccedit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/fore/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/fore/InsV2V.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/fore/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/fore/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/fore/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/fore/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/video_edit/type/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Background:</b> <i>"Dark sky"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/back/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/back/ccedit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/back/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/back/InsV2V.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/back/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/back/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/back/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/back/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/video_edit/type/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Style:</b> <i>"Oil painting style"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/style/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/style/ccedit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/style/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/style/InsV2V.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/style/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/style/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/style/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/style/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/video_edit/type/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Composite:</b> <i>"Dark sky, Game style mountain"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/compo/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/compo/ccedit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/compo/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/compo/InsV2V2.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/compo/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/compo/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/compo/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/type/compo/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <p style="text-align:center; font-size: 1.2em; color: orangered" class="serif"><i><b>Editing Scenarios</b></i></p>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/quali_video/env/weather/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Weather:</b> <i>"Stormy skies with rain and mist"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/weather/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/weather/ccedit 2.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/weather/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/weather/InsV2V.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/weather/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/weather/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/weather/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/weather/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/quali_video/env/time/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Time:</b> <i>"Warm golden tones at sunset"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/time/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/time/ccedit-copy-0.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/time/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/time/InsV2V.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/time/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/time/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/time/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/time/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/quali_video/env/back/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Background:</b> <i>"Distant mountain visible"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/back/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/back/ccedit 2.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/back/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/back/InsV2V.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/back/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/back/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/back/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/env/back/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/quali_video/object/add/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Addition:</b> <i>"With multiple bees"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/add/slowed_bees.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/add/ccedit-copy-3.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/add/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/add/InsV2V.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/add/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/add/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/add/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/add/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/quali_video/object/rem/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Removal:</b> <i>"With no airplane"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rem/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rem/ccedit-copy-4.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rem/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rem/insv2v_new.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rem/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rem/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rem/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rem/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/quali_video/object/rep/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Replacement:</b> <i>"A cruise ship"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rep/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rep/ccedit-copy-5.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rep/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rep/insv2v.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rep/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rep/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rep/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/object/rep/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/quali_video/human/app/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Appearance:</b> <i>"A woman wearing a blue coat"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/app/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/app/ccedit-copy-1.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/app/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/app/insv2v.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/app/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/app/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/app/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/app/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  <div class="row" style="display: flex; justify-content: center;">
+    <div class="col-gallery">
+      <img src="assets/video/quali_video/human/motion/ori.gif" style="width: 100%;">
+      <p style="text-align: center; margin-top: 0;"><b>Motion:</b> <i>"Pecking"</i></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/motion/edit.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;"><strong><i>OmniCreator (Ours)</i></strong></p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/motion/ccedit-copy-2.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">CCEdit</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/motion/controlvideo.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">ControlVideo</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/motion/insv2v.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">InsV2V</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/motion/Pix2Video.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Pix2Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/motion/tav.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Tune-A-Video</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/motion/tokenflow_PnP_fps_10.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">TokenFlow</p>
+      </div>
+
+      <div class="col-gallery">
+        <img src="assets/video/quali_video/human/motion/videop2p.gif" style="width: 100%;">
+        <p style="text-align: center; margin-top: 0;">Video-P2P</p>
+      </div>
+    </div>
+  </div>
+  
+  <p class="serif"><b style="font-size: 1.3em;">&hellip;</b></p>
+
+</div>
+
+</div>
+
+
+<div class="content" id="bibtex">
+  <p style="text-align:left; font-size: 2em; font-weight: bold" class="serif">BibTeX</p>
+  <code>
+  <!-- @misc{guo2023sparsectrl,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;title={SparseCtrl: Adding Sparse Controls to Text-to-Video Diffusion Models},<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;author={Yuwei Guo and Ceyuan Yang and Anyi Rao and Maneesh Agrawala and Dahua Lin and Bo Dai},<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;year={2023},<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;eprint={2311.16933},<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;archivePrefix={arXiv},<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;primaryClass={cs.CV}<br>
+  } -->
+  Coming soon...
+  </code>
+</div>
+
+<div class="content">
+  <p class="serif">
+    Project page template is borrowed from <a href="https://dreambooth.github.io/">DreamBooth</a>.
+  </p>
+</div>
+
+<style>
+  .gradient-text {
+      font-weight: bold;
+      background: linear-gradient(to right, purple, red, orange); /* 定义渐变色 */
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-family: "Times New Roman", Times, serif;
+  }
+</style>
+
+<style>
+  .gradient-black {
+      font-weight: bold;
+      background: linear-gradient(to right, black, black); /* 定义渐变色 */
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-family: "Times New Roman", Times, serif;
+  }
+</style>
+
+</body>
+
+<script>
+  var videos = document.getElementsByClassName("clickplay");
+  for (var i = 0; i < videos.length; i++) {
+    videos[i].addEventListener("click", function() {
+      this.play();
+    });
+    videos[i].addEventListener("ended", function() {
+      this.pause();
+      this.currentTime = 0;
+    });
+  }
+</script>
+
+</html>
